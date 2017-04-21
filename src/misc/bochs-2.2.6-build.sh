@@ -1,4 +1,7 @@
 #! /bin/sh -e
+PINTOSDIR=/mnt/hgfs/6.828/pintos
+SRCDIR=$HOME/Downloads
+DSTDIR=/usr/local
 
 if test -z "$SRCDIR" || test -z "$PINTOSDIR" || test -z "$DSTDIR"; then
     echo "usage: env SRCDIR=<srcdir> PINTOSDIR=<srcdir> DSTDIR=<dstdir> sh $0"
@@ -26,7 +29,8 @@ cat $PINTOSDIR/src/misc/bochs-2.2.6-namespace.patch | patch -p1
 if test "`uname -s`" = "SunOS"; then
     cat $PINTOSDIR/src/misc/bochs-2.2.6-solaris-link.patch | patch -p1
 fi
-CFGOPTS="--with-x --with-x11 --with-term --with-nogui --prefix=$DSTDIR --enable-cpu-level=6"
+#CFGOPTS="--with-x --with-x11 --with-term --with-nogui --prefix=$DSTDIR --enable-cpu-level=6"
+CFGOPTS="--with-term --with-nogui --prefix=$DSTDIR --enable-cpu-level=6"
 mkdir plain &&
         cd plain && 
         ../configure $CFGOPTS --enable-gdb-stub && 
