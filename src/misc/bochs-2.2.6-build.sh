@@ -1,6 +1,6 @@
 #! /bin/sh -e
-PINTOSDIR=/mnt/hgfs/6.828/pintos
-SRCDIR=$HOME/Downloads
+PINTOSDIR=$HOME/courses/os/pintos
+SRCDIR=$HOME/courses/os/devops
 DSTDIR=/usr/local
 
 if test -z "$SRCDIR" || test -z "$PINTOSDIR" || test -z "$DSTDIR"; then
