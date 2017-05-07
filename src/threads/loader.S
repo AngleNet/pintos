@@ -15,6 +15,7 @@
 #### this.
 
 # Runs in real mode, which is a 16-bit segment.
+# Code-segment basis. 
 	.code16
 
 # Set up segment registers.
@@ -25,13 +26,13 @@
 	mov %ax, %ds
 	mov %ax, %ss
 	mov $0xf000, %esp
-
 # Configure serial port so we can report progress without connected VGA.
-# See [IntrList] for details.
+# See [IntrList] for details. See [Coreboot] for BIOS implementation.
 	sub %dx, %dx			# Serial port 0.
 	mov $0xe3, %al			# 9600 bps, N-8-1.
 					# AH is already 0 (Initialize Port).
 	int $0x14			# Destroys AX.
+# See [Art of Assembly. Ch13] for details of serial port programming.
 
 	call puts
 	.string "PiLo"
@@ -188,7 +189,7 @@ next_char:
 	mov %cs:(%si), %al
 	inc %si
 	test %al, %al
-	jz 1f
+	jz 1f # f represents 'forward', b represents 'backward'
 	call putc
 	jmp next_char
 1:	pop %ax
