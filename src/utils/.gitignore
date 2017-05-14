@@ -3,3 +3,4 @@ squish-pty
 squish-unix
 gdb-macros
 .gdb_history
+*.o

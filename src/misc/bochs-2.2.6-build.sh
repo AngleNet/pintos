@@ -1,6 +1,6 @@
 #! /bin/sh -e
-PINTOSDIR=$HOME/courses/os/pintos
-SRCDIR=$HOME/courses/os/devops
+PINTOSDIR=/home/anglenet/pintos
+SRCDIR=$PINTOSDIR/devops
 DSTDIR=/usr/local
 
 if test -z "$SRCDIR" || test -z "$PINTOSDIR" || test -z "$DSTDIR"; then
@@ -30,7 +30,7 @@ if test "`uname -s`" = "SunOS"; then
     cat $PINTOSDIR/src/misc/bochs-2.2.6-solaris-link.patch | patch -p1
 fi
 #CFGOPTS="--with-x --with-x11 --with-term --with-nogui --prefix=$DSTDIR --enable-cpu-level=6"
-CFGOPTS="--with-term --with-nogui --prefix=$DSTDIR --enable-cpu-level=6"
+CFGOPTS="--with-term --with-nogui --prefix=$DSTDIR --enable-cpu-level=6 "
 mkdir plain &&
         cd plain && 
         ../configure $CFGOPTS --enable-gdb-stub && 
@@ -39,7 +39,7 @@ mkdir plain &&
         cd ..
 mkdir with-dbg &&
         cd with-dbg &&
-        ../configure --enable-debugger $CFGOPTS &&
+        ../configure --enable-debugger --enable-disasm --enable-debugger-gui $CFGOPTS &&
         make &&
         cp bochs $DSTDIR/bin/bochs-dbg &&
         cd ..
