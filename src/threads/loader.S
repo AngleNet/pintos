@@ -200,7 +200,7 @@ next_char:
 #### VGA display and serial port 0, using BIOS services (see
 #### [IntrList]).  Preserves all general-purpose registers.
 ####
-#### If called upon to output a carriage return, this subroutine
+#### If called upon to outpt a carriage return, this subroutine
 #### automatically supplies the following line feed.
 
 putc:	pusha
