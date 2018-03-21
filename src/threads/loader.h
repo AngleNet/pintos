@@ -1,6 +1,8 @@
 #ifndef THREADS_LOADER_H
 #define THREADS_LOADER_H
 
+// | loader | CMD arg count| CMD arg | Partition tables | loader sign|
+
 /* Constants fixed by the PC BIOS. */
 #define LOADER_BASE 0x7c00      /* Physical address of loader's base. */
 #define LOADER_END  0x7e00      /* Physical address of end of loader. */

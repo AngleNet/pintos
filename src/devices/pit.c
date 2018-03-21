@@ -4,7 +4,7 @@
 #include "threads/interrupt.h"
 #include "threads/io.h"
 
-/* Interface to 8254 Programmable Interrupt Timer (PIT).
+/* Interface to 8254 Programmable Interval Timer (PIT).
    Refer to [8254] for details. */
 
 /* 8254 registers. */

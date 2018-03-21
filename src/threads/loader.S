@@ -163,9 +163,9 @@ next_sector:
 
 	mov $0x2000, %ax
 	mov %ax, %es
-	mov %es:0x18, %dx
+	mov %es:0x18, %dx	## What is 0x20018?
 	mov %dx, start
-	movw $0x2000, start + 2
+	movw $0x2000, start + 2 ## Little endian or big endian?
 	ljmp *start
 
 read_failed:
@@ -183,7 +183,7 @@ start:
 #### just after the terminating null.  This subroutine preserves all
 #### general-purpose registers.
 
-puts:	xchg %si, %ss:(%esp)
+puts:	xchg %si, %ss:(%esp) # %ss:(%esp) is return address
 	push %ax
 next_char:
 	mov %cs:(%si), %al

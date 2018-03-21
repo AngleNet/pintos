@@ -45,6 +45,9 @@ start:
 	jbe 1f
 	mov $0x10000, %eax
 1:	shrl $2, %eax		# Total 4 kB pages
+	# Store %eax to init_ram_pages. Now the paging is not enabled,
+	# we need to find where init_ram_pages is and store the value
+	# there.
 	addr32 movl %eax, init_ram_pages - LOADER_PHYS_BASE - 0x20000
 
 #### Enable A20.  Address line 20 is tied low when the machine boots,
@@ -82,6 +85,7 @@ start:
 #### directory base register.
 
 # Create page directory at 0xf000 (60 kB) and fill with zeroes.
+# The page directory is 4K long.
 	mov $0xf00, %ax
 	mov %ax, %es
 	subl %eax, %eax
@@ -93,6 +97,7 @@ start:
 # Also add identical PDEs starting at LOADER_PHYS_BASE.
 # See [IA32-v3a] section 3.7.6 "Page-Directory and Page-Table Entries"
 # for a description of the bits in %eax.
+# There are 16 PDEs. We keep a copy at the last 1Kb
 
 	movl $0x10007, %eax
 	movl $0x11, %ecx
@@ -108,10 +113,10 @@ start:
 # See [IA32-v3a] section 3.7.6 "Page-Directory and Page-Table Entries"
 # for a description of the bits in %eax.
 
-	movw $0x1000, %ax
+	movw $0x1000, %ax ## TODO: Should be 64K? 
 	movw %ax, %es
 	movl $0x7, %eax
-	movl $0x4000, %ecx
+	movl $0x4000, %ecx # 16K page entries in the page table
 	subl %edi, %edi
 1:	movl %eax, %es:(%di)
 	addw $4, %di
@@ -187,6 +192,7 @@ start:
 #### GDT
 
 	.align 8
+# See [IA32-Vol3] 3.4.3 Segment descriptors for detailed explaination
 gdt:
 	.quad 0x0000000000000000	# Null segment.  Not used by CPU.
 	.quad 0x00cf9a000000ffff	# System code, base 0, limit 4 GB.
