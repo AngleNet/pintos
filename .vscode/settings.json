@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "debug.h": "c",
+        "timer.h": "c",
+        "synch.h": "c",
+        "inttypes.h": "c"
+    }
+}

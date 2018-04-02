@@ -32,7 +32,7 @@
         alarm-multiple`. `pintos` has many useful flags, try it out. The 
         following is more useful:
         > -v: disable X output<br>
-        > pintos run alarm-multiple > logfile: redirect bochs screen to 
+        > pintos run alarm-multiple > logfile: redirect bochs screen to /home/anglenet
         > logfile <br>
         > -t: use terminal as VGA <br>
         > -s: suppress serial input
