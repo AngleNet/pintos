@@ -137,7 +137,9 @@
     > Python: `'{0:b}'.format(2)'` shows 2 in binary format.
         
 ### Design
-----
+#### 1. Efficient sleep 
+* Option 1: 在timer的中断处理程序中查看到期的thread,然后唤醒
+* Option 2: 在timer
 
 #### PRELIMINARIES
 
