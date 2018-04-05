@@ -42,6 +42,18 @@
         One the most important thing is **reproducibility**. Bochs is featured by **jitter** which makes bochs timer interrupts came 
         at random intervals, but in a perfectly predictable way.
         > In particular, if you invoke pintos with the option -j seed, timer interrupts will come at irregularly spaced intervals. Within a single seed value, execution will still be reproducible, but timer behavior will change as seed is varied.
+
+        ```
+        gdb commands
+        set print pretty on
+        set print object on
+        set print static-members on
+        set print vtbl on
+        set print demangle on
+        set demangle-style gnu-v3
+        set print sevenbit-strings off
+        set follow-fork-mode child
+        ```
     
     * Testing
 
@@ -138,27 +150,37 @@
         
 ### Design
 #### 1. Efficient sleep 
-* Option 1: 在timer的中断处理程序中查看到期的thread,然后唤醒
-* Option 2: 在timer
+* DATA STRUCTURES
 
-#### PRELIMINARIES
+    `waiter` keeps track of the remaining ticks to wake up corresponding 
+    thread.
+    ```cpp
+    /* timer_delay*/
+    struct waiter{
+        struct thread* thread;
+        int delay;
+    };
+    ``` 
+    `waiters` is a list of `waiter`s. When a tick arrives, the timer handler
+    will check all of waiters and wake up waiters whose timer expired. 
+    ```cpp
+    /* timer_list */
+    static struct list waiters;
+    ```
+* ALGORITHM
 
-> If you have any preliminary comments on your submission, notes for the
-> TAs, or extra credit, please give them here.
-*  [Art of Assembly](https://courses.engr.illinois.edu/ece390/books/artofasm/)
-    Book of assembly code.
+    `timer_sleep()` creates a `waiter` and put it to the waiting list, that is
+    `waiters`. It then blocks current thread via `thread_block()` to start 
+    sleeping.
 
-* [Bochs internal debugger](http://bochs.sourceforge.net/doc/docbook/user/internal-debugger.html)
+    Added to `timer_interrupt()`: `thread_tick()` updates ticks and plans to 
+    preempt the CPU when time slice expires. After calling `thread_tick()`,
+    it updates delays for each waiter and check for 0 delay which means the 
+    waiter should be woken up via `thread_unblock()`. If current thread's time
+    slice does not expire, it should preempt CPU and start schedule.
 
-* [Nice assembly language guaid](http://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html)
 
-* [Nice IA32 assembly programming guaid](http://flint.cs.yale.edu/cs422/doc/pc-arch.html)
-
-> Please cite any offline or online sources you consulted while
-> preparing your submission, other than the Pintos documentation, course
-> text, lecture notes, and course staff.
-
-#### ALARM CLOCK
+#### 2. ALARM CLOCK
 
 * DATA STRUCTURES 
 
@@ -187,7 +209,7 @@
 > A6: Why did you choose this design?  In what ways is it superior to
 > another design you considered?
 
-#### PRIORITY SCHEDULING
+#### 3. PRIORITY SCHEDULING
 
 * DATA STRUCTURES 
 
@@ -294,6 +316,24 @@ the quarter.
 > students, either for future quarters or the remaining projects?
 
 > Any other comments?
+
+#### PRELIMINARIES
+
+> If you have any preliminary comments on your submission, notes for the
+> TAs, or extra credit, please give them here.
+*  [Art of Assembly](https://courses.engr.illinois.edu/ece390/books/artofasm/)
+    Book of assembly code.
+
+* [Bochs internal debugger](http://bochs.sourceforge.net/doc/docbook/user/internal-debugger.html)
+
+* [Nice assembly language guaid](http://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html)
+
+* [Nice IA32 assembly programming guaid](http://flint.cs.yale.edu/cs422/doc/pc-arch.html)
+
+> Please cite any offline or online sources you consulted while
+> preparing your submission, other than the Pintos documentation, course
+> text, lecture notes, and course staff.
+
 
 
 

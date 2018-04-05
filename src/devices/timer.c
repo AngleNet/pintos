@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "devices/pit.h"
 #include "threads/interrupt.h"
+#include "threads/malloc.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
   
@@ -24,6 +25,14 @@ static int64_t ticks;
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
 
+struct waiter{
+  struct thread* thread;
+  int delay;
+  struct list_elem elem;
+};
+
+static struct list waiters;
+
 static intr_handler_func timer_interrupt;
 static bool too_many_loops (unsigned loops);
 static void busy_wait (int64_t loops);
@@ -37,6 +46,7 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+  list_init(&waiters);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -89,11 +99,14 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
-
   ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+  struct waiter* wt = (struct waiter*) malloc(sizeof(struct waiter));
+  wt->thread = thread_current();
+  wt->delay = ticks;
+  list_push_back(&waiters, &wt->elem);
+  enum intr_level old_level = intr_disable ();
+  thread_block();
+  intr_set_level (old_level);
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -170,8 +183,24 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  struct list_elem* e;
   ticks++;
   thread_tick ();
+  bool wake_up = false;
+  for (e = list_begin (&waiters); e != list_end (&waiters);
+       e = list_next (e))
+  {
+    struct waiter *w = list_entry (e, struct waiter, elem);
+    w->delay--;
+    if(w->delay == 0){
+      thread_unblock(w->thread);
+      wake_up = true;
+      list_remove(e);
+    }
+  }
+  if(wake_up){
+    intr_yield_on_return();
+  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
