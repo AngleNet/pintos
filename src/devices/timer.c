@@ -103,8 +103,8 @@ timer_sleep (int64_t ticks)
   struct waiter* wt = (struct waiter*) malloc(sizeof(struct waiter));
   wt->thread = thread_current();
   wt->delay = ticks;
-  list_push_back(&waiters, &wt->elem);
   enum intr_level old_level = intr_disable ();
+  list_push_back(&waiters, &wt->elem);
   thread_block();
   intr_set_level (old_level);
 }

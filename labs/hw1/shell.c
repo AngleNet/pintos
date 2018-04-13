@@ -128,6 +128,7 @@ int main(unused int argc, unused char *argv[]) {
 
   static char line[4096];
   int line_num = 0;
+  char* args[256];
 
   /* Please only print shell prompts when standard input is not a tty */
   if (shell_is_interactive)
@@ -144,21 +145,17 @@ int main(unused int argc, unused char *argv[]) {
       cmd_table[fundex].fun(tokens);
     } else {
       /* REPLACE this to run commands as programs. */
-      pid_t pid = fork();
       int ret = 0;
+      pid_t pid = fork();
       if(pid == 0){
         int tlen = tokens_get_length(tokens);
-        char ** args = (char **)malloc(sizeof(char *)*tlen);
-        for(int i = 0; i < tlen; i++){
-          args[0] = tokens_get_token(tokens, i);
+        int idx = 0;
+        for(idx = 0; idx < tlen; idx++){
+          args[idx] = tokens_get_token(tokens, idx);
         }
-        errno = 0;
-        ret = execvp(args[0], args);
-        free(args);
-        if(ret < 0){
-          return errno;
-        }
-        return 0;
+        args[idx] = NULL;
+        execvp(args[0], args);
+        return errno;
       }else{
         waitpid(pid, &ret, 0);
         if(ret > 0){
