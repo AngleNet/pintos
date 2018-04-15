@@ -5,12 +5,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
 
 #include "tokenizer.h"
+
+
+#define CHECK_SYSCALL_RET(ret, exit_code)      \
+  if(ret < 0) {                     \
+    char *error = strerror(errno);    \
+    fprintf(stdout, "%s\n", error); \
+    if(exit_code != 0){             \
+      _exit(exit_code);             \
+    }                               \
+  }
 
 /* Convenience macro to silence compiler warnings about unused function parameters. */
 #define unused __attribute__((unused))
@@ -151,17 +163,40 @@ int main(unused int argc, unused char *argv[]) {
         int tlen = tokens_get_length(tokens);
         int idx = 0;
         for(idx = 0; idx < tlen; idx++){
-          args[idx] = tokens_get_token(tokens, idx);
+          char* s = tokens_get_token(tokens, idx);
+          if(strcmp(s, "<") == 0 || strcmp(s, ">") == 0){
+            break;
+          }
+          args[idx] = s;
         }
         args[idx] = NULL;
+        char* in_file = NULL;
+        char* out_file = NULL;
+        for(; idx < tlen; idx++){
+          char* s = tokens_get_token(tokens, idx);
+          if(strcmp(s, "<") == 0 && in_file == NULL && idx+1 < tlen){
+            in_file = tokens_get_token(tokens, idx+1);
+          }else if(strcmp(s, ">") == 0 && out_file == NULL && idx+1 < tlen){
+            out_file = tokens_get_token(tokens, idx+1);
+          }else{
+            continue;
+          }
+        }
+        if(in_file){
+          int rd_fd = open(in_file, O_CLOEXEC|O_RDONLY);
+          CHECK_SYSCALL_RET(rd_fd, 1);
+          dup2(rd_fd, 0);
+        }
+        if(out_file){
+          int wr_fd = open(out_file, O_CLOEXEC|O_WRONLY|O_CREAT|O_TRUNC,
+              S_IRUSR|S_IRGRP|S_IWGRP|S_IWUSR);
+          CHECK_SYSCALL_RET(wr_fd, 1);
+          dup2(wr_fd, 1);
+        }
         execvp(args[0], args);
         return errno;
       }else{
         waitpid(pid, &ret, 0);
-        if(ret > 0){
-          char * error = strerror(ret);
-          fprintf(stdout, "%s\n", error);
-        }
       }
     }
 
